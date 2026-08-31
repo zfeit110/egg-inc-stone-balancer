@@ -71,6 +71,8 @@
   }
 
   * { box-sizing: border-box; }
+  html, body { overscroll-behavior-y: none; }
+  html.locked, html.locked body { overflow: hidden; height: 100%; }
   body {
     background: var(--bg);
     color: var(--text);
@@ -775,6 +777,11 @@
   deflEl.addEventListener("focus", () => {
     deflJustFocused = true;
     setTimeout(() => deflEl.select(), 0);
+    // undo iOS's keyboard scroll-into-view nudge (the field is already visible)
+    if (window.scrollY < 40) {
+      setTimeout(() => window.scrollTo(0, 0), 60);
+      setTimeout(() => window.scrollTo(0, 0), 350);
+    }
   });
   deflEl.addEventListener("mouseup", e => {
     if (deflJustFocused) { e.preventDefault(); deflJustFocused = false; }
@@ -789,6 +796,9 @@
   const PANELS = [["stones", "tabStones", "paneStones"], ["collegg", "tabCollegg", "paneCollegg"], ["cutoffs", "tabCutoffs", "paneCutoffs"]];
   function renderPanel() {
     $("panelCard").hidden = !state.panel;
+    // with every section closed the page fits one screen: lock scrolling
+    // entirely so iOS can't rubber-band or keyboard-nudge the layout
+    document.documentElement.classList.toggle("locked", !state.panel);
     for (const [key, tabId, paneId] of PANELS) {
       const on = state.panel === key;
       $(tabId).classList.toggle("on", on);
