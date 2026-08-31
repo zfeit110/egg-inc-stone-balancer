@@ -97,7 +97,7 @@
     padding: 8px 12px 12px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
   }
 
   header.app { display: flex; align-items: baseline; gap: 10px; padding: 0 4px; }
@@ -124,7 +124,7 @@
     letter-spacing: 0.6px;
     text-transform: uppercase;
     color: var(--text-dim);
-    margin: 0 0 8px;
+    margin: 0 0 6px;
     display: flex;
     justify-content: space-between;
     align-items: baseline;
@@ -191,9 +191,9 @@
   .rate-chip.limit { outline: 2px solid var(--accent); color: var(--text); }
 
   .defl-row {
-    margin-top: 10px;
+    margin-top: 8px;
     border-top: 1px dashed var(--border);
-    padding-top: 9px;
+    padding-top: 8px;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -208,6 +208,28 @@
     pointer-events: none;
   }
   .pct-box input { padding-right: 32px !important; text-align: right; }
+
+  .mod-row {
+    margin-top: 8px;
+    border-top: 1px dashed var(--border);
+    padding-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mod-row .mod-lbl { font-size: 13px; font-weight: 800; flex: none; }
+  .mod-row .seg { flex: 1; }
+  .mod-row .seg button { min-height: 34px; padding: 4px 2px; font-size: 12px; }
+  .mod-row.active .mod-lbl { color: var(--accent-strong); }
+  .mult-box { position: relative; width: 76px; flex: none; }
+  .mult-box .x-sign {
+    position: absolute; left: 10px; top: 50%;
+    transform: translateY(-50%);
+    font-weight: 800; color: var(--text-dim);
+    pointer-events: none;
+  }
+  .mult-box input { padding-left: 24px !important; text-align: right; }
+  .mod-row.active .mult-box input { border-color: var(--accent); }
 
   input, select {
     width: 100%;
@@ -232,8 +254,8 @@
   }
 
   /* ---------- artifacts: fixed four, rarity pickers, in-game glow ---------- */
-  .art-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 10px; }
-  .art-cell { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+  .art-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 10px; }
+  .art-cell { display: flex; flex-direction: column; align-items: center; gap: 5px; }
   .art-name {
     font-family: "Fredoka", sans-serif;
     font-weight: 600;
@@ -413,6 +435,14 @@
         <span class="pct-sign">%</span>
       </div>
     </div>
+    <div class="mod-row" id="modRow">
+      <span class="mod-lbl">Modifier</span>
+      <div class="seg" id="segMod" role="group" aria-label="Contract modifier dimension"></div>
+      <div class="mult-box" id="multBox" hidden>
+        <span class="x-sign">&times;</span>
+        <input type="text" id="modMult" inputmode="decimal" autocomplete="off" value="1" aria-label="Contract modifier multiplier">
+      </div>
+    </div>
   </section>
 
   <section class="card">
@@ -508,6 +538,8 @@
     tachTier: "t4",
     quantTier: "q4",
     collegg: { gatoregg: -1, silicon: -1, carbonfiber: -1, pumpkin: -1, pegg: -1 },
+    modDim: "none", // contract modifier: 'none' | 'lay' | 'ship' | 'hab'
+    modMult: 1,
     panel: null, // 'stones' | 'collegg' | 'cutoffs' | null
   };
 
@@ -526,6 +558,8 @@
           }
           base.collegg = Object.assign(structuredClone(DEFAULT_STATE.collegg), s.collegg || {});
           if (["stones", "collegg", "cutoffs"].includes(s.panel)) base.panel = s.panel;
+          if (["none", "lay", "ship", "hab"].includes(s.modDim)) base.modDim = s.modDim;
+          if (typeof s.modMult === "number" && s.modMult > 0) base.modMult = s.modMult;
           if (s.rarity) {
             base.rarity = Object.assign(structuredClone(DEFAULT_STATE.rarity), s.rarity);
           } else if (Array.isArray(s.slots)) {
@@ -592,13 +626,17 @@
     }
     const tach = stoneOf("tach", state.tachTier);
     const quant = stoneOf("quant", state.quantTier);
-    const pop = Math.floor(BASE_HAB * gussetMult * colMult("hab"));
+    const mod = dim => {
+      const m = Number(state.modMult);
+      return state.modDim === dim && m > 0 ? m : 1;
+    };
+    const pop = Math.floor(BASE_HAB * gussetMult * colMult("hab") * mod("hab"));
     return {
       totalSlots, tach, quant, pop,
       tMult: 1 + tach.pct / 100,
       qMult: 1 + quant.pct / 100,
-      layBase0: pop * BASE_LAY_PER_CHICKEN * metroMult * colMult("lay"), // before deflector & stones
-      shipBase: BASE_SHIP * compassMult * colMult("ship"),               // before stones
+      layBase0: pop * BASE_LAY_PER_CHICKEN * metroMult * colMult("lay") * mod("lay"), // before deflector & stones
+      shipBase: BASE_SHIP * compassMult * colMult("ship") * mod("ship"),              // before stones
     };
   }
 
@@ -766,11 +804,30 @@
     }
   }
 
+  const MOD_DIMS = [["None", "none"], ["Lay", "lay"], ["Ship", "ship"], ["Hab", "hab"]];
+  function renderMod() {
+    const holder = $("segMod");
+    holder.innerHTML = "";
+    for (const [lbl, val] of MOD_DIMS) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = lbl;
+      b.className = state.modDim === val ? "on" : "";
+      b.setAttribute("aria-pressed", state.modDim === val ? "true" : "false");
+      b.addEventListener("click", () => { state.modDim = val; update(); });
+      holder.appendChild(b);
+    }
+    const active = state.modDim !== "none";
+    $("multBox").hidden = !active;
+    $("modRow").classList.toggle("active", active);
+  }
+
   function renderControls() {
     renderSlots();
     renderSeg("segTach", "tach", state.tachTier, id => state.tachTier = id);
     renderSeg("segQuant", "quant", state.quantTier, id => state.quantTier = id);
     renderCollegg();
+    renderMod();
   }
 
   function update() {
@@ -796,6 +853,28 @@
   });
   deflEl.addEventListener("mouseup", e => {
     if (deflJustFocused) { e.preventDefault(); deflJustFocused = false; }
+  });
+
+  // contract modifier multiplier: same focus/select behavior as the deflector
+  const multEl = $("modMult");
+  multEl.value = state.modMult;
+  multEl.addEventListener("input", () => {
+    const v = Number(multEl.value);
+    state.modMult = isFinite(v) && v > 0 ? v : 1;
+    saveState();
+    renderResult();
+  });
+  let multJustFocused = false;
+  multEl.addEventListener("focus", () => {
+    multJustFocused = true;
+    setTimeout(() => multEl.select(), 0);
+    if (window.scrollY < 40) {
+      setTimeout(() => window.scrollTo(0, 0), 60);
+      setTimeout(() => window.scrollTo(0, 0), 350);
+    }
+  });
+  multEl.addEventListener("mouseup", e => {
+    if (multJustFocused) { e.preventDefault(); multJustFocused = false; }
   });
   deflEl.addEventListener("input", () => {
     state.deflPct = deflEl.value === "" ? 0 : Number(deflEl.value);
