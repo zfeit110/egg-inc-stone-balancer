@@ -191,9 +191,9 @@
     font-weight: 800; color: var(--text-dim);
     pointer-events: none;
   }
-  .pct-box input[type="number"] { padding-right: 32px; text-align: right; }
+  .pct-box input { padding-right: 32px !important; text-align: right; }
 
-  input[type="number"], select {
+  input, select {
     width: 100%;
     font-size: 16px;
     font-family: inherit;
@@ -384,7 +384,7 @@
         <span>total from teammates &mdash; yours doesn&rsquo;t boost you</span>
       </label>
       <div class="pct-box">
-        <input type="number" id="deflPct" inputmode="decimal" min="0" step="1" value="0" aria-label="Co-op deflector bonus percent">
+        <input type="text" id="deflPct" inputmode="decimal" autocomplete="off" value="0" aria-label="Co-op deflector bonus percent">
         <span class="pct-sign">%</span>
       </div>
     </div>
@@ -761,6 +761,16 @@
   // deflector input
   const deflEl = $("deflPct");
   deflEl.value = state.deflPct;
+  // select the current value on focus so typing replaces it; swallow the
+  // tap's own mouseup so iOS doesn't immediately collapse the selection
+  let deflJustFocused = false;
+  deflEl.addEventListener("focus", () => {
+    deflJustFocused = true;
+    setTimeout(() => deflEl.select(), 0);
+  });
+  deflEl.addEventListener("mouseup", e => {
+    if (deflJustFocused) { e.preventDefault(); deflJustFocused = false; }
+  });
   deflEl.addEventListener("input", () => {
     state.deflPct = deflEl.value === "" ? 0 : Number(deflEl.value);
     saveState();
