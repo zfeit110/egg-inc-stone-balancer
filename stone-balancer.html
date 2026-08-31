@@ -211,6 +211,7 @@
   .mod-row .seg button { min-height: 34px; padding: 4px 2px; font-size: 12px; }
   .mod-row.active .mod-lbl { color: var(--accent-strong); }
   .mult-box { position: relative; width: 76px; flex: none; }
+  .mult-box.off { visibility: hidden; }
   .mult-box .x-sign {
     position: absolute; left: 10px; top: 50%;
     transform: translateY(-50%);
@@ -427,7 +428,7 @@
     <div class="mod-row" id="modRow">
       <span class="mod-lbl">Modifier</span>
       <div class="seg" id="segMod" role="group" aria-label="Contract modifier dimension"></div>
-      <div class="mult-box" id="multBox" hidden>
+      <div class="mult-box" id="multBox">
         <span class="x-sign">&times;</span>
         <input type="text" id="modMult" inputmode="decimal" autocomplete="off" value="1" aria-label="Contract modifier multiplier">
       </div>
@@ -807,7 +808,7 @@
       holder.appendChild(b);
     }
     const active = state.modDim !== "none";
-    $("multBox").hidden = !active;
+    $("multBox").classList.toggle("off", !active);
     $("modRow").classList.toggle("active", active);
   }
 
