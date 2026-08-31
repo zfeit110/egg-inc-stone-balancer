@@ -36,6 +36,8 @@ standalone = "\n".join([
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
     '<meta name="robots" content="noindex">',
     '<link rel="icon" href="' + FAVICON + '">',
+    '<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">',
+    '<meta name="apple-mobile-web-app-title" content="Stone Balancer">',
     "</head>",
     "<body>",
     out,

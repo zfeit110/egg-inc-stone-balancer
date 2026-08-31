@@ -160,8 +160,7 @@
     color: var(--accent-strong);
   }
   .delivery .rate small { font-size: 16px; font-weight: 600; }
-  .delivery .permin { font-size: 11.5px; color: var(--text-dim); }
-  .rate-chips { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+  .rate-chips { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
   .rate-chip {
     background: var(--chip-bg);
     border-radius: 999px;
@@ -170,6 +169,10 @@
     color: var(--text-dim);
     font-weight: 700;
     white-space: nowrap;
+    min-width: 136px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
   }
   .rate-chip b { color: var(--text); font-weight: 800; }
   .rate-chip.limit { outline: 2px solid var(--accent); color: var(--text); }
@@ -272,27 +275,38 @@
   .rar-seg button.on.rc-L { color: var(--rar-l); }
   .art-detail { font-size: 11px; font-weight: 700; color: var(--text-dim); }
 
-  /* ---------- collapsibles ---------- */
-  details.card { padding: 0; }
-  details.card summary {
+  /* ---------- section tabs (one row, expand below) ---------- */
+  .sec-tabs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .sec-tabs button {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 8px 4px 7px;
+    min-height: 54px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
     font-family: "Fredoka", sans-serif;
     font-weight: 600;
-    font-size: 13.5px;
-    letter-spacing: 0.6px;
+    font-size: 11.5px;
+    letter-spacing: 0.5px;
     text-transform: uppercase;
     color: var(--text-dim);
-    padding: 12px;
-    cursor: pointer;
-    list-style: none;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
   }
-  details.card summary::-webkit-details-marker { display: none; }
-  details.card summary .sum-meta { font-family: "Nunito Sans", sans-serif; font-size: 11.5px; letter-spacing: 0; text-transform: none; font-weight: 700; }
-  details.card summary::after { content: "+"; font-size: 17px; margin-left: 8px; }
-  details.card[open] summary::after { content: "\2013"; }
-  details.card .body { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 10px; }
+  .sec-tabs button .sum-meta {
+    font-family: "Nunito Sans", sans-serif;
+    font-size: 10.5px;
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 700;
+  }
+  .sec-tabs button.on { border-color: var(--accent); color: var(--text); }
+  .panes { display: flex; flex-direction: column; gap: 10px; }
+  .pane[hidden] { display: none; }
   .hint { font-size: 11.5px; color: var(--text-dim); line-height: 1.45; margin: 0; }
 
   /* stone tier segmented controls */
@@ -372,7 +386,6 @@
       <div>
         <div class="lbl">Delivery rate</div>
         <div class="rate"><span id="rateHr">–</span><small> /hr</small></div>
-        <div class="permin" id="rateMin"></div>
       </div>
       <div class="rate-chips">
         <span class="rate-chip" id="chipLay">Laying <b>–</b></span>
@@ -395,37 +408,36 @@
     <div class="art-grid" id="slots"></div>
   </section>
 
-  <details class="card" id="dStones">
-    <summary>Your best stones <span class="sum-meta" id="stoneMeta"></span></summary>
-    <div class="body">
-      <div class="seg-row">
-        <div class="seg-name">Tachyon<span>laying</span></div>
-        <div class="seg tach" id="segTach" role="group" aria-label="Tachyon stone tier"></div>
-      </div>
-      <div class="seg-row">
-        <div class="seg-name">Quantum<span>shipping</span></div>
-        <div class="seg quant" id="segQuant" role="group" aria-label="Quantum stone tier"></div>
-      </div>
-    </div>
-  </details>
+  <div class="sec-tabs" role="group" aria-label="More sections">
+    <button type="button" id="tabStones">Stones<span class="sum-meta" id="stoneMeta"></span></button>
+    <button type="button" id="tabCollegg">Colleggtibles<span class="sum-meta" id="colMeta"></span></button>
+    <button type="button" id="tabCutoffs">Cutoffs<span class="sum-meta" id="cutMeta"></span></button>
+  </div>
 
-  <details class="card" id="dCollegg">
-    <summary>Colleggtibles <span class="sum-meta" id="colMeta"></span></summary>
-    <div class="body">
-      <div id="colRows" style="display:flex;flex-direction:column;gap:8px"></div>
-      <p class="hint">Pick the highest bonus you&rsquo;ve unlocked on each egg (max farm size 10M / 100M / 1B / 10B on its contracts).</p>
-    </div>
-  </details>
-
-  <details class="card" id="dCutoffs">
-    <summary>Deflector cutoffs</summary>
-    <div class="body">
-      <div style="overflow-x:auto">
-        <table class="cut" id="cutTable"></table>
+  <section class="card" id="panelCard" hidden>
+    <div class="panes">
+      <div class="pane" id="paneStones" hidden>
+        <div class="seg-row">
+          <div class="seg-name">Tachyon<span>laying</span></div>
+          <div class="seg tach" id="segTach" role="group" aria-label="Tachyon stone tier"></div>
+        </div>
+        <div class="seg-row" style="margin-top:10px">
+          <div class="seg-name">Quantum<span>shipping</span></div>
+          <div class="seg quant" id="segQuant" role="group" aria-label="Quantum stone tier"></div>
+        </div>
       </div>
-      <p class="hint">Best stone split for each co-op deflector range, with your current artifacts, stones, and colleggtibles.</p>
+      <div class="pane" id="paneCollegg" hidden>
+        <div id="colRows" style="display:flex;flex-direction:column;gap:8px"></div>
+        <p class="hint" style="margin-top:10px">Pick the highest bonus you&rsquo;ve unlocked on each egg (max farm size 10M / 100M / 1B / 10B on its contracts).</p>
+      </div>
+      <div class="pane" id="paneCutoffs" hidden>
+        <div style="overflow-x:auto">
+          <table class="cut" id="cutTable"></table>
+        </div>
+        <p class="hint" style="margin-top:10px">Best stone split for each co-op deflector range, with your current artifacts, stones, and colleggtibles.</p>
+      </div>
     </div>
-  </details>
+  </section>
 
   <footer class="note">
     Assumes maxed common &amp; epic research, full habs, all-hyperloop shipping. Saved on this device.
@@ -487,7 +499,7 @@
     tachTier: "t4",
     quantTier: "q4",
     collegg: { gatoregg: -1, silicon: -1, carbonfiber: -1, pumpkin: -1, pegg: -1 },
-    open: { stones: false, collegg: false, cutoffs: false },
+    panel: null, // 'stones' | 'collegg' | 'cutoffs' | null
   };
 
   const STORE_KEY = "egginc-stone-balancer-v1";
@@ -504,7 +516,7 @@
             if (s[k] !== undefined) base[k] = s[k];
           }
           base.collegg = Object.assign(structuredClone(DEFAULT_STATE.collegg), s.collegg || {});
-          base.open = Object.assign(structuredClone(DEFAULT_STATE.open), s.open || {});
+          if (["stones", "collegg", "cutoffs"].includes(s.panel)) base.panel = s.panel;
           if (s.rarity) {
             base.rarity = Object.assign(structuredClone(DEFAULT_STATE.rarity), s.rarity);
           } else if (Array.isArray(s.slots)) {
@@ -606,7 +618,6 @@
     $("quantCount").textContent = g.totalSlots - best.k;
 
     $("rateHr").textContent = fmt(best.delivery);
-    $("rateMin").textContent = fmt(best.delivery / 60) + " per min";
 
     const layLimited = best.lay <= best.ship;
     $("chipLay").innerHTML = "Laying <b>" + fmt(best.lay, 2) + "</b>";
@@ -642,6 +653,7 @@
         ? "\u2265 " + r.from + "%"
         : (r.from === r.to ? r.from + "%" : r.from + " \u2013 " + r.to + "%");
       const now = cur >= r.from && (r.to === null || cur <= r.to);
+      if (now) $("cutMeta").textContent = range;
       html += "<tr" + (now ? ' class="now"' : "") + "><td>" + range +
         '</td><td class="t">' + r.k + tImg + '</td><td class="q">' + (g.totalSlots - r.k) + qImg + "</td></tr>";
     }
@@ -777,13 +789,26 @@
     renderResult();
   });
 
-  // collapsible open-state persistence
-  for (const [key, id] of [["stones", "dStones"], ["collegg", "dCollegg"], ["cutoffs", "dCutoffs"]]) {
-    const el = $(id);
-    el.open = !!state.open[key];
-    el.addEventListener("toggle", () => { state.open[key] = el.open; saveState(); });
+  // section tabs: one open at a time, tap again to close
+  const PANELS = [["stones", "tabStones", "paneStones"], ["collegg", "tabCollegg", "paneCollegg"], ["cutoffs", "tabCutoffs", "paneCutoffs"]];
+  function renderPanel() {
+    $("panelCard").hidden = !state.panel;
+    for (const [key, tabId, paneId] of PANELS) {
+      const on = state.panel === key;
+      $(tabId).classList.toggle("on", on);
+      $(tabId).setAttribute("aria-expanded", on ? "true" : "false");
+      $(paneId).hidden = !on;
+    }
+  }
+  for (const [key, tabId] of PANELS) {
+    $(tabId).addEventListener("click", () => {
+      state.panel = state.panel === key ? null : key;
+      saveState();
+      renderPanel();
+    });
   }
 
   renderControls();
   renderResult();
+  renderPanel();
 </script>
