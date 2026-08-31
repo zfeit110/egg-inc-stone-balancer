@@ -1,0 +1,774 @@
+<title>Stone Balancer</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito+Sans:opsz,wght@6..12,400;6..12,600;6..12,700;6..12,800&display=swap">
+<style>
+  :root {
+    --bg: #EDF2F7;
+    --surface: #FFFFFF;
+    --surface-2: #F3F6FA;
+    --text: #1E2A3A;
+    --text-dim: #5B6B7F;
+    --border: #D8E0EA;
+    --accent: #C8860A;
+    --accent-strong: #A56E05;
+    --tachyon: #C06A14;
+    --tachyon-bg: #FBF1E4;
+    --quantum: #17828F;
+    --quantum-bg: #E3F4F6;
+    --chip-bg: #E7EDF4;
+    --row-hi: #FBF3DC;
+    --rar-c: #7E8A99;
+    --rar-r: #3D7FC4;
+    --rar-e: #9256C8;
+    --rar-l: #C8860A;
+    --focus: #2F6FB7;
+    --shadow: 0 1px 3px rgba(30, 42, 58, 0.08), 0 4px 16px rgba(30, 42, 58, 0.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E1526;
+      --surface: #182238;
+      --surface-2: #1F2B45;
+      --text: #E9EEF6;
+      --text-dim: #97A6BC;
+      --border: #2A3A58;
+      --accent: #F0B429;
+      --accent-strong: #F6C453;
+      --tachyon: #E89A4B;
+      --tachyon-bg: #2B2338;
+      --quantum: #46C6D6;
+      --quantum-bg: #153043;
+      --chip-bg: #24314D;
+      --row-hi: #3A3320;
+      --rar-c: #9AA6B5;
+      --rar-r: #5FA8E8;
+      --rar-e: #B57FE8;
+      --rar-l: #F0B429;
+      --focus: #6FA8E8;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0E1526;
+    --surface: #182238;
+    --surface-2: #1F2B45;
+    --text: #E9EEF6;
+    --text-dim: #97A6BC;
+    --border: #2A3A58;
+    --accent: #F0B429;
+    --accent-strong: #F6C453;
+    --tachyon: #E89A4B;
+    --tachyon-bg: #2B2338;
+    --quantum: #46C6D6;
+    --quantum-bg: #153043;
+    --chip-bg: #24314D;
+    --row-hi: #3A3320;
+    --rar-c: #9AA6B5;
+    --rar-r: #5FA8E8;
+    --rar-e: #B57FE8;
+    --rar-l: #F0B429;
+    --focus: #6FA8E8;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Nunito Sans", "Segoe UI", system-ui, sans-serif;
+    margin: 0;
+    -webkit-text-size-adjust: 100%;
+  }
+  .wrap {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 10px 12px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  header.app { display: flex; align-items: baseline; gap: 10px; padding: 0 4px; }
+  header.app h1 {
+    font-family: "Fredoka", "Nunito Sans", sans-serif;
+    font-weight: 700;
+    font-size: 21px;
+    margin: 0;
+    letter-spacing: 0.2px;
+  }
+  header.app .tag { color: var(--text-dim); font-size: 12.5px; font-weight: 600; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+    padding: 12px;
+  }
+  h2.sec {
+    font-family: "Fredoka", sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin: 0 0 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  h2.sec .meta { font-family: "Nunito Sans", sans-serif; font-size: 11.5px; letter-spacing: 0; text-transform: none; font-weight: 700; }
+
+  /* ---------- results ---------- */
+  .stones { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .stone-tile {
+    border-radius: 12px;
+    padding: 8px 8px 7px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .stone-tile.tach { background: var(--tachyon-bg); }
+  .stone-tile.quant { background: var(--quantum-bg); }
+  .stone-tile img { width: 40px; height: 40px; flex: none; }
+  .stone-tile .count {
+    font-family: "Fredoka", sans-serif;
+    font-weight: 700;
+    font-size: 32px;
+    line-height: 1;
+  }
+  .stone-tile.tach .count { color: var(--tachyon); }
+  .stone-tile.quant .count { color: var(--quantum); }
+  .stone-tile .lbl { font-size: 11px; font-weight: 800; letter-spacing: 0.4px; text-transform: uppercase; }
+  .stone-tile.tach .lbl { color: var(--tachyon); }
+  .stone-tile.quant .lbl { color: var(--quantum); }
+
+  .delivery {
+    margin-top: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .delivery .lbl { font-size: 11.5px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-dim); }
+  .delivery .rate {
+    font-family: "Fredoka", sans-serif;
+    font-weight: 700;
+    font-size: 30px;
+    line-height: 1.05;
+    color: var(--accent-strong);
+  }
+  .delivery .rate small { font-size: 16px; font-weight: 600; }
+  .delivery .permin { font-size: 11.5px; color: var(--text-dim); }
+  .rate-chips { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+  .rate-chip {
+    background: var(--chip-bg);
+    border-radius: 999px;
+    padding: 3px 10px;
+    font-size: 11.5px;
+    color: var(--text-dim);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .rate-chip b { color: var(--text); font-weight: 800; }
+  .rate-chip.limit { outline: 2px solid var(--accent); color: var(--text); }
+
+  .defl-row {
+    margin-top: 10px;
+    border-top: 1px dashed var(--border);
+    padding-top: 9px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .defl-row label { font-size: 13px; font-weight: 800; flex: 1; }
+  .defl-row label span { display: block; font-size: 11px; font-weight: 700; color: var(--text-dim); }
+  .pct-box { position: relative; width: 108px; flex: none; }
+  .pct-box .pct-sign {
+    position: absolute; right: 12px; top: 50%;
+    transform: translateY(-50%);
+    font-weight: 800; color: var(--text-dim);
+    pointer-events: none;
+  }
+  .pct-box input[type="number"] { padding-right: 32px; text-align: right; }
+
+  input[type="number"], select {
+    width: 100%;
+    font-size: 16px;
+    font-family: inherit;
+    font-weight: 700;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 10px;
+    min-height: 44px;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type="number"] { -moz-appearance: textfield; }
+  input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+  }
+
+  /* ---------- artifacts: fixed four, rarity pickers, in-game glow ---------- */
+  .art-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 10px; }
+  .art-cell { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+  .art-name {
+    font-family: "Fredoka", sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+  .art-icon { position: relative; width: 72px; height: 72px; }
+  .art-icon img.art {
+    width: 72px; height: 72px;
+    object-fit: contain;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+  }
+  .art-icon .slot-dots {
+    position: absolute; bottom: 2px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 3px;
+  }
+  .art-icon .slot-dots i {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #FFFFFF;
+    box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35);
+    display: block;
+  }
+  .rar-seg { display: flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 2px; width: 100%; }
+  .rar-seg button {
+    flex: 1;
+    font-family: "Fredoka", sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dim);
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 0;
+    min-height: 38px;
+    cursor: pointer;
+  }
+  .rar-seg button.on { background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .rar-seg button.on.rc-C { color: var(--rar-c); }
+  .rar-seg button.on.rc-R { color: var(--rar-r); }
+  .rar-seg button.on.rc-E { color: var(--rar-e); }
+  .rar-seg button.on.rc-L { color: var(--rar-l); }
+  .art-detail { font-size: 11px; font-weight: 700; color: var(--text-dim); }
+
+  /* ---------- collapsibles ---------- */
+  details.card { padding: 0; }
+  details.card summary {
+    font-family: "Fredoka", sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 12px;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  details.card summary::-webkit-details-marker { display: none; }
+  details.card summary .sum-meta { font-family: "Nunito Sans", sans-serif; font-size: 11.5px; letter-spacing: 0; text-transform: none; font-weight: 700; }
+  details.card summary::after { content: "+"; font-size: 17px; margin-left: 8px; }
+  details.card[open] summary::after { content: "\2013"; }
+  details.card .body { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 10px; }
+  .hint { font-size: 11.5px; color: var(--text-dim); line-height: 1.45; margin: 0; }
+
+  /* stone tier segmented controls */
+  .seg-row { display: grid; grid-template-columns: 78px 1fr; align-items: center; gap: 8px; }
+  .seg-row .seg-name { font-size: 13px; font-weight: 800; }
+  .seg-row .seg-name span { display: block; font-size: 11px; color: var(--text-dim); font-weight: 700; }
+  .seg { display: flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 3px; }
+  .seg button {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--text-dim);
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 3px;
+    min-height: 40px;
+    cursor: pointer;
+  }
+  .seg button img { width: 22px; height: 22px; }
+  .seg button.on { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.18); }
+  .seg.tach button.on { color: var(--tachyon); }
+  .seg.quant button.on { color: var(--quantum); }
+
+  /* colleggtibles */
+  .col-row { display: grid; grid-template-columns: 30px 86px 1fr; align-items: center; gap: 7px; }
+  .col-row img { width: 30px; height: 30px; }
+  .col-row .col-name { font-size: 12.5px; font-weight: 800; line-height: 1.15; }
+  .col-row .col-name span { display: block; font-size: 10.5px; color: var(--text-dim); font-weight: 700; }
+  .col-row .seg button { min-height: 36px; padding: 4px 1px; font-size: 11.5px; }
+
+  /* cutoff table */
+  table.cut { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  table.cut th {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--text-dim); font-weight: 800; text-align: left;
+    padding: 4px 8px; border-bottom: 1px solid var(--border);
+  }
+  table.cut th img { width: 16px; height: 16px; vertical-align: -3px; margin-right: 3px; }
+  table.cut td { font-size: 13.5px; font-weight: 700; padding: 5px 8px; border-bottom: 1px solid var(--border); }
+  table.cut td img { width: 17px; height: 17px; vertical-align: -3px; margin-left: 5px; }
+  table.cut tr:last-child td { border-bottom: none; }
+  table.cut td.t { color: var(--tachyon); }
+  table.cut td.q { color: var(--quantum); }
+  table.cut th:nth-child(2), table.cut td:nth-child(2),
+  table.cut th:nth-child(3), table.cut td:nth-child(3) { text-align: center; }
+  table.cut tr.now td { background: var(--row-hi); }
+  table.cut tr.now td:first-child { border-radius: 8px 0 0 8px; }
+  table.cut tr.now td:last-child { border-radius: 0 8px 8px 0; }
+
+  footer.note { font-size: 10.5px; color: var(--text-dim); text-align: center; line-height: 1.5; padding: 0 8px; }
+</style>
+
+<div class="wrap">
+  <header class="app">
+    <h1>Stone Balancer</h1>
+    <span class="tag">Egg, Inc. contracts</span>
+  </header>
+
+  <section class="card" aria-live="polite">
+    <div class="stones">
+      <div class="stone-tile tach">
+        <img id="tachImg" alt="Tachyon stone">
+        <div><div class="count" id="tachCount">–</div><div class="lbl">Tachyon</div></div>
+      </div>
+      <div class="stone-tile quant">
+        <img id="quantImg" alt="Quantum stone">
+        <div><div class="count" id="quantCount">–</div><div class="lbl">Quantum</div></div>
+      </div>
+    </div>
+    <div class="delivery">
+      <div>
+        <div class="lbl">Delivery rate</div>
+        <div class="rate"><span id="rateHr">–</span><small> /hr</small></div>
+        <div class="permin" id="rateMin"></div>
+      </div>
+      <div class="rate-chips">
+        <span class="rate-chip" id="chipLay">Laying <b>–</b></span>
+        <span class="rate-chip" id="chipShip">Shipping <b>–</b></span>
+      </div>
+    </div>
+    <div class="defl-row">
+      <label for="deflPct">Co-op deflector bonus
+        <span>total from teammates &mdash; yours doesn&rsquo;t boost you</span>
+      </label>
+      <div class="pct-box">
+        <input type="number" id="deflPct" inputmode="decimal" min="0" step="1" value="0" aria-label="Co-op deflector bonus percent">
+        <span class="pct-sign">%</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2 class="sec">Your artifacts <span class="meta" id="artMeta"></span></h2>
+    <div class="art-grid" id="slots"></div>
+  </section>
+
+  <details class="card" id="dStones">
+    <summary>Your best stones <span class="sum-meta" id="stoneMeta"></span></summary>
+    <div class="body">
+      <div class="seg-row">
+        <div class="seg-name">Tachyon<span>laying</span></div>
+        <div class="seg tach" id="segTach" role="group" aria-label="Tachyon stone tier"></div>
+      </div>
+      <div class="seg-row">
+        <div class="seg-name">Quantum<span>shipping</span></div>
+        <div class="seg quant" id="segQuant" role="group" aria-label="Quantum stone tier"></div>
+      </div>
+    </div>
+  </details>
+
+  <details class="card" id="dCollegg">
+    <summary>Colleggtibles <span class="sum-meta" id="colMeta"></span></summary>
+    <div class="body">
+      <div id="colRows" style="display:flex;flex-direction:column;gap:8px"></div>
+      <p class="hint">Pick the highest bonus you&rsquo;ve unlocked on each egg (max farm size 10M / 100M / 1B / 10B on its contracts).</p>
+    </div>
+  </details>
+
+  <details class="card" id="dCutoffs">
+    <summary>Deflector cutoffs</summary>
+    <div class="body">
+      <div style="overflow-x:auto">
+        <table class="cut" id="cutTable"></table>
+      </div>
+      <p class="hint">Best stone split for each co-op deflector range, with your current artifacts, stones, and colleggtibles.</p>
+    </div>
+  </details>
+
+  <footer class="note">
+    Assumes maxed common &amp; epic research, full habs, all-hyperloop shipping. Saved on this device.
+  </footer>
+</div>
+
+<script>
+  const ICONS = "__ICONS__";
+
+  // Base rates, fully maxed common + epic research (wasmegg artifact-sandbox).
+  const BASE_LAY_PER_CHICKEN =
+    (1 / 30) * 6 * 3.5 * 5.5 * 3 * 2 * 2 * 2 * 3600; // eggs/chicken/hr = 332,640
+  const BASE_HAB = 1.134e10;
+  const BASE_SHIP =
+    50e6 * 2.5 * 5 * 2.5 * 3.5 * 2 * 2.25 * 2.25 * 2.25 * 2.25 * 2.5 * 10 * 17 * 60; // eggs/hr
+
+  // The fixed contract loadout: four T4 artifacts, pick a rarity for each.
+  const ARTIFACTS = [
+    { key: "deflector", name: "Deflector", effect: "coop", icon: "afx_tachyon_deflector_4",
+      rarities: { L: { delta: 0.20, slots: 2 }, E: { delta: 0.19, slots: 2 }, R: { delta: 0.17, slots: 1 }, C: { delta: 0.15, slots: 0 } } },
+    { key: "metronome", name: "Metronome", effect: "laying", icon: "afx_quantum_metronome_4",
+      rarities: { L: { delta: 0.35, slots: 3 }, E: { delta: 0.30, slots: 2 }, R: { delta: 0.27, slots: 1 }, C: { delta: 0.25, slots: 0 } } },
+    { key: "compass", name: "Compass", effect: "shipping", icon: "afx_interstellar_compass_4",
+      rarities: { L: { delta: 0.50, slots: 2 }, E: { delta: 0.40, slots: 2 }, R: { delta: 0.35, slots: 1 }, C: { delta: 0.30, slots: 0 } } },
+    { key: "gusset", name: "Gusset", effect: "hab", icon: "afx_ornate_gusset_4",
+      rarities: { L: { delta: 0.25, slots: 3 }, E: { delta: 0.22, slots: 2 }, C: { delta: 0.20, slots: 0 } } },
+  ];
+  const RARITY_GLOW = { C: "glow_C", R: "glow_R", E: "glow_E", L: "glow_L" };
+  const RARITY_NAME = { C: "Common", R: "Rare", E: "Epic", L: "Legendary" };
+
+  const STONE_TIERS = {
+    tach: [
+      { id: "t2", pct: 2, icon: "afx_tachyon_stone_2", name: "Tachyon" },
+      { id: "t3", pct: 4, icon: "afx_tachyon_stone_3", name: "Eggsquisite" },
+      { id: "t4", pct: 5, icon: "afx_tachyon_stone_4", name: "Brilliant" },
+    ],
+    quant: [
+      { id: "q2", pct: 2, icon: "afx_quantum_stone_2", name: "Quantum" },
+      { id: "q3", pct: 4, icon: "afx_quantum_stone_3", name: "Phased" },
+      { id: "q4", pct: 5, icon: "afx_quantum_stone_4", name: "Meggnificent" },
+    ],
+  };
+
+  // The five colleggtibles that affect delivery rate. Tier bonuses +1/2/3/5%
+  // at max farm size 10M/100M/1B/10B (data: Egg Inc custom eggs via carpetsage/egg).
+  const COLLEGGTIBLES = [
+    { id: "gatoregg",    name: "Gatoregg",     dim: "lay",  icon: "egg_gatoregg" },
+    { id: "silicon",     name: "Silicon",      dim: "lay",  icon: "egg_silicon" },
+    { id: "carbonfiber", name: "Carbon Fiber", dim: "ship", icon: "egg_carbonfiber" },
+    { id: "pumpkin",     name: "Pumpkin",      dim: "ship", icon: "egg_pumpkin" },
+    { id: "pegg",        name: "P.E.G.G.",     dim: "hab",  icon: "egg_pegg" },
+  ];
+  const COL_TIER_PCTS = [1, 2, 3, 5]; // tier index 0..3
+  const DIM_LABEL = { lay: "egg laying", ship: "shipping", hab: "hab capacity" };
+
+  const DEFAULT_STATE = {
+    deflPct: 0,
+    rarity: { deflector: "L", metronome: "L", compass: "L", gusset: "L" },
+    tachTier: "t4",
+    quantTier: "q4",
+    collegg: { gatoregg: -1, silicon: -1, carbonfiber: -1, pumpkin: -1, pegg: -1 },
+    open: { stones: false, collegg: false, cutoffs: false },
+  };
+
+  const STORE_KEY = "egginc-stone-balancer-v1";
+  let state = loadState();
+
+  function loadState() {
+    const base = structuredClone(DEFAULT_STATE);
+    try {
+      const raw = localStorage.getItem(STORE_KEY);
+      if (raw) {
+        const s = JSON.parse(raw);
+        if (s && typeof s === "object") {
+          for (const k of ["deflPct", "tachTier", "quantTier"]) {
+            if (s[k] !== undefined) base[k] = s[k];
+          }
+          base.collegg = Object.assign(structuredClone(DEFAULT_STATE.collegg), s.collegg || {});
+          base.open = Object.assign(structuredClone(DEFAULT_STATE.open), s.open || {});
+          if (s.rarity) {
+            base.rarity = Object.assign(structuredClone(DEFAULT_STATE.rarity), s.rarity);
+          } else if (Array.isArray(s.slots)) {
+            // migrate from the old free-form slot layout: keep T4 rarity picks
+            for (const slot of s.slots) {
+              const art = ARTIFACTS.find(a => a.key === slot.fam);
+              if (!art || typeof slot.tier !== "string" || slot.tier[1] !== "4") continue;
+              const r = slot.tier[2].toUpperCase();
+              if (art.rarities[r]) base.rarity[art.key] = r;
+            }
+          }
+          // guard against invalid rarities (e.g. gusset has no Rare)
+          for (const art of ARTIFACTS) {
+            if (!art.rarities[base.rarity[art.key]]) base.rarity[art.key] = "L";
+          }
+        }
+      }
+    } catch (e) { /* storage unavailable */ }
+    return base;
+  }
+  function saveState() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+  }
+
+  // ---------- number formatting (Egg Inc units) ----------
+  const UNITS = [
+    ["d", 1e33], ["N", 1e30], ["o", 1e27], ["S", 1e24], ["s", 1e21],
+    ["Q", 1e18], ["q", 1e15], ["T", 1e12], ["B", 1e9], ["M", 1e6], ["K", 1e3],
+  ];
+  function fmt(n, digits) {
+    if (!isFinite(n) || n <= 0) return "0";
+    for (const [suffix, mag] of UNITS) {
+      if (n >= mag) {
+        const v = n / mag;
+        const d = digits !== undefined ? digits : (v >= 100 ? 1 : v >= 10 ? 2 : 3);
+        return v.toFixed(d) + suffix;
+      }
+    }
+    return Math.round(n).toLocaleString();
+  }
+
+  function stoneOf(kind, id) {
+    return STONE_TIERS[kind].find(s => s.id === id) || STONE_TIERS[kind][2];
+  }
+  function colMult(dim) {
+    let m = 1;
+    for (const c of COLLEGGTIBLES) {
+      if (c.dim !== dim) continue;
+      const t = state.collegg[c.id];
+      if (t >= 0 && t <= 3) m *= 1 + COL_TIER_PCTS[t] / 100;
+    }
+    return m;
+  }
+
+  // ---------- core calculation ----------
+  function gather() {
+    let metroMult = 1, compassMult = 1, gussetMult = 1, totalSlots = 0;
+    for (const art of ARTIFACTS) {
+      const r = art.rarities[state.rarity[art.key]];
+      totalSlots += r.slots;
+      if (art.effect === "laying") metroMult *= 1 + r.delta;
+      else if (art.effect === "shipping") compassMult *= 1 + r.delta;
+      else if (art.effect === "hab") gussetMult *= 1 + r.delta;
+    }
+    const tach = stoneOf("tach", state.tachTier);
+    const quant = stoneOf("quant", state.quantTier);
+    const pop = Math.floor(BASE_HAB * gussetMult * colMult("hab"));
+    return {
+      totalSlots, tach, quant, pop,
+      tMult: 1 + tach.pct / 100,
+      qMult: 1 + quant.pct / 100,
+      layBase0: pop * BASE_LAY_PER_CHICKEN * metroMult * colMult("lay"), // before deflector & stones
+      shipBase: BASE_SHIP * compassMult * colMult("ship"),               // before stones
+    };
+  }
+
+  function bestSplit(g, deflPct) {
+    const layBase = g.layBase0 * (1 + Math.max(0, deflPct) / 100);
+    let best = null;
+    for (let k = 0; k <= g.totalSlots; k++) {
+      const lay = layBase * Math.pow(g.tMult, k);
+      const ship = g.shipBase * Math.pow(g.qMult, g.totalSlots - k);
+      const delivery = Math.min(lay, ship);
+      if (!best || delivery > best.delivery + 1e-9) best = { k, lay, ship, delivery };
+    }
+    return best;
+  }
+
+  // ---------- rendering ----------
+  const $ = id => document.getElementById(id);
+
+  function renderResult() {
+    const g = gather();
+    const best = bestSplit(g, Number(state.deflPct) || 0);
+
+    $("tachImg").src = ICONS[g.tach.icon];
+    $("quantImg").src = ICONS[g.quant.icon];
+    $("tachCount").textContent = best.k;
+    $("quantCount").textContent = g.totalSlots - best.k;
+
+    $("rateHr").textContent = fmt(best.delivery);
+    $("rateMin").textContent = fmt(best.delivery / 60) + " per min";
+
+    const layLimited = best.lay <= best.ship;
+    $("chipLay").innerHTML = "Laying <b>" + fmt(best.lay, 2) + "</b>";
+    $("chipShip").innerHTML = "Shipping <b>" + fmt(best.ship, 2) + "</b>";
+    $("chipLay").classList.toggle("limit", layLimited);
+    $("chipShip").classList.toggle("limit", !layLimited);
+
+    $("artMeta").textContent = fmt(g.pop, 2) + " hens \u00B7 " + g.totalSlots + " slots";
+    $("stoneMeta").textContent = "+" + g.tach.pct + "% / +" + g.quant.pct + "%";
+    const nCol = Object.values(state.collegg).filter(t => t >= 0).length;
+    $("colMeta").textContent = nCol ? nCol + " active" : "none";
+
+    renderCutoffs(g);
+  }
+
+  function renderCutoffs(g) {
+    const cur = Math.floor(Number(state.deflPct) || 0);
+    const rows = [];
+    let prevK = null, start = 0;
+    for (let d = 0; d <= 1000; d++) {
+      const k = bestSplit(g, d).k;
+      if (prevK === null) { prevK = k; start = 0; }
+      else if (k !== prevK) { rows.push({ k: prevK, from: start, to: d - 1 }); prevK = k; start = d; }
+      if (prevK === 0) break;
+    }
+    rows.push({ k: prevK, from: start, to: null });
+
+    const tImg = '<img src="' + ICONS[g.tach.icon] + '" alt="tachyon">';
+    const qImg = '<img src="' + ICONS[g.quant.icon] + '" alt="quantum">';
+    let html = "<tr><th>Deflector</th><th>" + tImg + "Tachyon</th><th>" + qImg + "Quantum</th></tr>";
+    for (const r of rows) {
+      const range = r.to === null
+        ? "\u2265 " + r.from + "%"
+        : (r.from === r.to ? r.from + "%" : r.from + " \u2013 " + r.to + "%");
+      const now = cur >= r.from && (r.to === null || cur <= r.to);
+      html += "<tr" + (now ? ' class="now"' : "") + "><td>" + range +
+        '</td><td class="t">' + r.k + tImg + '</td><td class="q">' + (g.totalSlots - r.k) + qImg + "</td></tr>";
+    }
+    $("cutTable").innerHTML = html;
+  }
+
+  function renderSlots() {
+    const holder = $("slots");
+    holder.innerHTML = "";
+    for (const art of ARTIFACTS) {
+      const rKey = state.rarity[art.key];
+      const r = art.rarities[rKey];
+      const cell = document.createElement("div");
+      cell.className = "art-cell";
+
+      const name = document.createElement("div");
+      name.className = "art-name";
+      name.textContent = art.name;
+      cell.appendChild(name);
+
+      const iconWrap = document.createElement("div");
+      iconWrap.className = "art-icon";
+      const img = document.createElement("img");
+      img.className = "art";
+      img.alt = art.name + " " + RARITY_NAME[rKey];
+      img.src = ICONS[art.icon];
+      img.style.backgroundImage = "url(" + ICONS[RARITY_GLOW[rKey]] + ")";
+      iconWrap.appendChild(img);
+      if (r.slots) {
+        const dots = document.createElement("span");
+        dots.className = "slot-dots";
+        dots.innerHTML = "<i></i>".repeat(r.slots);
+        iconWrap.appendChild(dots);
+      }
+      cell.appendChild(iconWrap);
+
+      const seg = document.createElement("div");
+      seg.className = "rar-seg";
+      seg.setAttribute("role", "group");
+      seg.setAttribute("aria-label", art.name + " rarity");
+      for (const key of Object.keys(art.rarities)) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = key;
+        b.className = "rc-" + key + (key === rKey ? " on" : "");
+        b.setAttribute("aria-pressed", key === rKey ? "true" : "false");
+        b.setAttribute("aria-label", art.name + " " + RARITY_NAME[key]);
+        b.addEventListener("click", () => { state.rarity[art.key] = key; update(); });
+        seg.appendChild(b);
+      }
+      cell.appendChild(seg);
+
+      const detail = document.createElement("div");
+      detail.className = "art-detail";
+      detail.textContent = "+" + Math.round(r.delta * 100) + "% \u00B7 " +
+        (r.slots ? r.slots + (r.slots > 1 ? " slots" : " slot") : "no slots");
+      cell.appendChild(detail);
+
+      holder.appendChild(cell);
+    }
+  }
+
+  function renderSeg(holderId, kind, currentId, onPick) {
+    const holder = $(holderId);
+    holder.innerHTML = "";
+    for (const s of STONE_TIERS[kind]) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = s.id === currentId ? "on" : "";
+      b.innerHTML = '<img src="' + ICONS[s.icon] + '" alt="">+' + s.pct + "%";
+      b.setAttribute("aria-pressed", s.id === currentId ? "true" : "false");
+      b.addEventListener("click", () => { onPick(s.id); update(); });
+      holder.appendChild(b);
+    }
+  }
+
+  function renderCollegg() {
+    const holder = $("colRows");
+    holder.innerHTML = "";
+    for (const c of COLLEGGTIBLES) {
+      const row = document.createElement("div");
+      row.className = "col-row";
+      row.innerHTML = '<img src="' + ICONS[c.icon] + '" alt="">' +
+        '<div class="col-name">' + c.name + "<span>" + DIM_LABEL[c.dim] + "</span></div>";
+      const seg = document.createElement("div");
+      seg.className = "seg";
+      seg.setAttribute("role", "group");
+      seg.setAttribute("aria-label", c.name + " bonus");
+      const opts = [["\u2013", -1], ["1%", 0], ["2%", 1], ["3%", 2], ["5%", 3]];
+      for (const [lbl, val] of opts) {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.textContent = lbl;
+        b.className = state.collegg[c.id] === val ? "on" : "";
+        b.setAttribute("aria-pressed", state.collegg[c.id] === val ? "true" : "false");
+        b.addEventListener("click", () => { state.collegg[c.id] = val; update(); });
+        seg.appendChild(b);
+      }
+      row.appendChild(seg);
+      holder.appendChild(row);
+    }
+  }
+
+  function renderControls() {
+    renderSlots();
+    renderSeg("segTach", "tach", state.tachTier, id => state.tachTier = id);
+    renderSeg("segQuant", "quant", state.quantTier, id => state.quantTier = id);
+    renderCollegg();
+  }
+
+  function update() {
+    saveState();
+    renderControls();
+    renderResult();
+  }
+
+  // deflector input
+  const deflEl = $("deflPct");
+  deflEl.value = state.deflPct;
+  deflEl.addEventListener("input", () => {
+    state.deflPct = deflEl.value === "" ? 0 : Number(deflEl.value);
+    saveState();
+    renderResult();
+  });
+
+  // collapsible open-state persistence
+  for (const [key, id] of [["stones", "dStones"], ["collegg", "dCollegg"], ["cutoffs", "dCutoffs"]]) {
+    const el = $(id);
+    el.open = !!state.open[key];
+    el.addEventListener("toggle", () => { state.open[key] = el.open; saveState(); });
+  }
+
+  renderControls();
+  renderResult();
+</script>
