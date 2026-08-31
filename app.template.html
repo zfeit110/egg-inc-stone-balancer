@@ -235,15 +235,20 @@
     background-position: center;
   }
   .art-icon .slot-dots {
-    position: absolute; bottom: 2px; left: 50%;
+    position: absolute; bottom: 3px; left: 50%;
     transform: translateX(-50%);
-    display: flex; gap: 3px;
+    display: flex; gap: 4px;
+    background: rgba(10, 16, 30, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    padding: 3px 6px;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
   }
   .art-icon .slot-dots i {
-    width: 8px; height: 8px;
+    width: 6px; height: 6px;
     border-radius: 50%;
-    background: #FFFFFF;
-    box-shadow: 0 0 0 1.5px rgba(0,0,0,0.35);
+    background: var(--accent);
     display: block;
   }
   .rar-seg { display: flex; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 3px; gap: 2px; width: 100%; }
